@@ -1,6 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import { Iknowspots } from "../target/types/iknowspots";
+import { SatMesh } from "../target/types/satmesh";
 import * as spl from "@solana/spl-token";
 import { BN } from "bn.js";
 const {
@@ -12,11 +12,11 @@ const {
   SystemProgram,
 } = anchor.web3;
 
-describe("iknowspots", () => {
+describe("satmesh", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
-  const program = anchor.workspace.Iknowspots as Program<Iknowspots>;
+  const program = anchor.workspace.SatMesh as Program<SatMesh>;
 
 
   const provider = anchor.AnchorProvider.local();

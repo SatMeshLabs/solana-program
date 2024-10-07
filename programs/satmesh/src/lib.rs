@@ -1,42 +1,43 @@
 use anchor_lang::prelude::*;
 
-pub mod errors;
-pub mod instructions;
-pub mod state;
-
-use instructions::*;
-
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+// Define the program
+declare_id!("B53qbHQgjbcpyDkBJ48U3b91K6Aqt8xtPLHqDT4D3A6x");
 
 #[program]
-pub mod iknowspots {
-    use crate::instruction::EventCreation;
-
+pub mod my_payable_contract {
     use super::*;
 
-    pub fn initialize(ctx: Context<InitializeContext>) -> Result<()> {
-        initialize::handler(ctx)
+    // Payable function that accepts a string argument
+    pub fn send_tx_to_network(ctx: Context<SendMessage>, message: String) -> Result<()> {
+        // Log the received message
+        msg!("Received message: {}", message);
+
+        // This is where we would handle the payment, 
+        // but in Solana, we usually deal with token transfers or lamports (native currency)
+        let user = &mut ctx.accounts.user;
+        let payment_amount = 1000; // Example: user needs to send 1000 lamports to use this function
+        require!(**user.lamports.borrow() >= payment_amount, CustomError::InsufficientFunds);
+
+        // Transfer the lamports to the program's account
+        **user.try_borrow_mut_lamports()? -= payment_amount;
+        **ctx.accounts.program_account.try_borrow_mut_lamports()? += payment_amount;
+
+        Ok(())
     }
-
-    pub fn event_creation(ctx: Context<EventCreationContext>, _event_id: u64, _supply: u64, _price:u64, _date: u64) -> Result<()> {
-        event_creation::handler(ctx, _event_id, _supply, _price, _date)
-    }
-
-    pub fn mint_spot(ctx: Context<MintSpotContext>, _event_id: u64, _event_bump: u8, _mint_position: u64) -> Result<()> {
-        mint_spot::handler(ctx, _event_id, _event_bump,_mint_position)
-    }
-
-    pub fn burn_spot(ctx: Context<BurnSpotContext>, _event_id: u64, _event_bump: u8, _mint_position: u64, _spot_nft_bump: u8) -> Result<()> {
-        burn_spot::handler(ctx, _event_id, _event_bump,_mint_position, _spot_nft_bump)
-    }
-
-
-
 }
 
+// Define the context for the function call
+#[derive(Accounts)]
+pub struct SendMessage<'info> {
+    #[account(mut)]
+    pub user: Signer<'info>,  // The person calling the function
+    #[account(mut)]
+    pub program_account: AccountInfo<'info>,  // The program's account
+}
 
-
-
-
-
-
+// Define custom errors
+#[error_code]
+pub enum CustomError {
+    #[msg("Insufficient funds sent for this transaction.")]
+    InsufficientFunds,
+}
